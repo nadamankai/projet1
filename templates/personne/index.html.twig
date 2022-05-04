@@ -1,0 +1,44 @@
+{% extends 'boot.html.twig' %}
+
+{% block body %}
+
+    <div class="row">
+    {% for val in personne %}
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-header">
+                    personne {{ val.id }}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ val.firstname }} {{ val.nom }}</h5>
+                    <p class="card-text">{{ val.age }}</p>
+                    <a href="{{ path('delete_personne',{'id':val.id}) }}" class="btn btn-primary">delete</a>
+                </div>
+            </div>
+        </div>
+
+    {% endfor %}
+    </div>
+<br>
+{% if ispaginated%}
+
+      <nav aria-label="Page navigation example">
+          <ul class="pagination">
+              {%  if page != 1  %}
+              <li class="page-item"><a class="page-link" href="{{ path('findpersonneby',{'page':page-1,'nbre':nbreparpage}) }}">Previous</a></li>
+                 {% else  %}
+                  <li class="page-item"><a class="page-link disabled" href="#">Previous</a></li>
+                  {% endif %}
+              {%  for i in range(1,nbrePage) %}
+              <li class="page-item"><a class="page-link" href="{{ path('findpersonneby',{'page':i,'nbre':nbreparpage}) }}">{{ i }}</a></li>
+              {%  endfor %}
+    {%  if page != nbrePage  %}
+              <li class="page-item"><a class="page-link" href="{{ path('findpersonneby',{'page':page+1,'nbre':nbreparpage}) }}">Next</a></li>
+       {% else %}
+        <li class="page-item"><a class="page-link disabled" href="#">Next</a></li>
+    {% endif %}
+          </ul>
+      </nav>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'boot.html.twig' %}
+
+{% block body %}
+{% for val in app.session.flashBag('erreur')%}
+    <p class="alert alert-danger">{{ val }}</p>
+{% endfor %}
+    <p class="alert alert-info">
+personne:
+    {{ personne.id }}
+    {{ personne.firstname }}
+    {{ personne.age }}
+    {{ personne.nom }}
+    </p>
+{% endblock %}
