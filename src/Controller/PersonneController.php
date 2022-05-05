@@ -35,7 +35,6 @@ class PersonneController extends AbstractController
         // recuperer personne
         // si la personne existe => la supprimer et retourner un flash message de succes
         if($id){
- $manager->remove($id);
  $manager->flush();
  $this->addFlash('alert','la personne a ete supprimé avec succés');
        }
