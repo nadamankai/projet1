@@ -1,7 +1,16 @@
 {% extends 'boot.html.twig' %}
 
 {% block body %}
-
+    {% for msg in app.session.flashbag.get('alert') %}
+        <h2 class="alert  alert-info">
+            {{ msg }}
+        </h2>
+    {% endfor %}
+    {% for msg in app.session.flashbag.get('erreur') %}
+        <h2 class="alert alert-danger">
+            {{ msg }}
+        </h2>
+    {% endfor %}
     <div class="row">
     {% for val in personne %}
         <div class="col-sm-6">
@@ -13,6 +22,8 @@
                     <h5 class="card-title">{{ val.firstname }} {{ val.nom }}</h5>
                     <p class="card-text">{{ val.age }}</p>
                     <a href="{{ path('delete_personne',{'id':val.id}) }}" class="btn btn-primary">delete</a>
+                    <a href="{{ path('app_personne2',{'id':val.id}) }}" class="btn btn-primary">detail</a>
+                    <a href="{{ path('edit_personne',{'id':val.id}) }}" class="btn btn-primary">editer</a>
                 </div>
             </div>
         </div>

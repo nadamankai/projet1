@@ -10,8 +10,11 @@ use Doctrine\ORM\Persisters\Collection\OneToManyPersister;
 use phpDocumentor\Reflection\Types\Integer;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 
 class PersonneController extends AbstractController
@@ -26,7 +29,7 @@ class PersonneController extends AbstractController
         ]);
     }
 
-    #[Route('/personne/delete/{id}', name: 'delete_personne')]
+    #[Route('/personne/delete/{id?0}', name: 'delete_personne')]
     public function delete(Personne $id=null, EntityManagerInterface $manager): Response
     {
         // recuperer personne
@@ -127,15 +130,64 @@ class PersonneController extends AbstractController
 
 
 
-    #[Route("/personne/add", name: 'add_personne')]
-    public function add(EntityManagerInterface $manager): Response
-    {
-        $personne=new Personne();
-$form = $this->createForm(PersonneType::class,$personne);
-$form->remove('updatedAt');
-$form->remove('createdAt');
-        return $this->render('personne/personne.html.twig',[ 'form' => $form->createView() ]);
+    #[Route("/personne/edit/{id?0}", name: 'edit_personne')]
+    public function add(Personne $personne=null,EntityManagerInterface $manager,Request $req,SluggerInterface $slugger): Response
+    {$new =false ;
+        if(!$personne) {
+            $new = true ;
+        $personne = new Personne();
     }
+        $form = $this->createForm(PersonneType::class, $personne);
+        $form->remove('updatedAt');
+        $form->remove('createdAt');
+//dump($req);
+        //mon formulaire va aller traiter la requete
+        $form->handleRequest(($req));
+//est ce que le formulaire a été soumis
+        if ($form->isSubmitted() && $form->isValid()) {
 
+                /** @var UploadedFile $brochureFile */
+                $photo = $form->get('photo')->getData();
+
+                // this condition is needed because the 'brochure' field is not required
+                // so the PDF file must be processed only when a file is uploaded
+                if ($photo) {
+                    $originalFilename = pathinfo($photo->getClientOriginalName(), PATHINFO_FILENAME);
+                    // this is needed to safely include the file name as part of the URL
+                    $safeFilename = $slugger->slug($originalFilename);
+                    $newFilename = $safeFilename . '-' . uniqid() . '.' . $photo->guessExtension();
+
+                    // Move the file to the directory where brochures are stored
+                    try {
+                        $photo->move(
+                            $this->getParameter('personne_directory'),
+                            $newFilename
+                        );
+                    } catch (FileException $e) {
+                        // ... handle exception if something happens during file upload
+                    }
+
+                    // updates the 'brochureFilename' property to store the PDF file name
+                    // instead of its contents
+                    $personne->setImage($newFilename);
+                }
+
+            //si oui ,on va ajouter l'objet personne dans la base de donnée
+//            dd($form->getData());
+            $manager->persist($personne);
+            $manager->flush();
+            //rederiger vers la liste des personnes
+            // afficher un message de succés
+           if($new=true) {
+               $this->addFlash('alert', "a ete ajoute avec succes");
+           }else{ $this->addFlash('alert', "a ete mis a jour avec succes");}
+            return $this->redirectToRoute('app_personne');
+            //sinon on affiche notre formulaire
+
+        } else {
+            return $this->render('personne/personne.html.twig', ['form' => $form->createView()]);
+        }
+
+    }
 
 }

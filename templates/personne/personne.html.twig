@@ -1,5 +1,10 @@
 {%  extends 'boot.html.twig' %}
 
 {%  block body %}
-{{  form(form) }}
+{{  form_start(form) }}
+    <div class="row">
+        <div class="col" >{{ form_row(form.firstname) }}</div>
+        <div class="col" >{{ form_row(form.nom) }}</div>
+    </div>
+    {{ form_row(form) }}
 {% endblock %}
